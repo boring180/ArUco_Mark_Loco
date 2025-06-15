@@ -22,6 +22,9 @@ imgpoints = [] # 2d points in image plane.
 
 images = glob.glob('captures/*.jpg')
 
+effective_chessboard_count = 0
+total_chessboard_count = 0
+
 for fname in images:
     img = cv.imread(fname)
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -33,15 +36,17 @@ for fname in images:
         objpoints.append(objp)
         imgpoints.append(corners)
         print(f'{fname} pattern found')
-        
+        effective_chessboard_count += 1
     else:
         print(f'{fname} pattern not found')
+        
+    total_chessboard_count += 1
 
 ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
 
-print(mtx)
-print(dist)
-
+print(f'Camera matrix: {mtx}')
+print(f'Distortion coefficients: {dist}')
+print(f'Effective Chessboard: {effective_chessboard_count}/{total_chessboard_count}')
 
 with open('calibration.json', 'w') as f:
     json.dump({'mtx': mtx.tolist(), 'dist': dist.tolist()}, f)
