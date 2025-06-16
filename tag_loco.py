@@ -35,35 +35,25 @@ while True:
         print(f'Found {len(ids)} markers')
         cv.aruco.drawDetectedMarkers(frame, corners, ids)
         
+        # Estimate pose for each marker
+        rvecs, tvecs, _ = cv.aruco.estimatePoseSingleMarkers(corners, length_of_marker, mtx, dist)
+        
         # Process each detected marker
         for i in range(len(ids)):
-            # Get the corners of the current marker
-            marker_corners = corners[i][0]
+            # Draw coordinate axes
+            cv.drawFrameAxes(frame, mtx, dist, rvecs[i], tvecs[i], length_of_marker/2)
             
-            # Calculate pose
-            ret, rvec, tvec = cv.solvePnP(
-                marker_points,
-                marker_corners,
-                mtx,
-                dist,
-                flags=cv.SOLVEPNP_IPPE_SQUARE
-            )
-            
-            if ret:
-                # Draw coordinate axes
-                cv.drawFrameAxes(frame, mtx, dist, rvec, tvec, length_of_marker/2)
-                
-                # Print position and rotation
-                print(f"Marker {ids[i][0]}:")
-                print(f"Position (x,y,z): {tvec.flatten()}")
-                print(f"Rotation (rx,ry,rz): {rvec.flatten()}")
-                print("-------------------")
+            # Print position and rotation
+            print(f"Marker {ids[i][0]}:")
+            print(f"Position (x,y,z): {tvecs[i].flatten()}")
+            print(f"Rotation (rx,ry,rz): {rvecs[i].flatten()}")
+            print("-------------------")
     
     cv.imshow('frame', frame)
     if cv.waitKey(1) & 0xFF == ord('q'):
         break
     
-    time.sleep(0.1)
+    time.sleep(0.03)
 
 camera.release()
 cv.destroyAllWindows()
